@@ -102,19 +102,9 @@
             const Title = (props) => {
                 return <h1>{props.children}</h1>;
             };
-            const Form = () => {
-                const [counter, setCounter] = React.useState(1);
-                // const counterState = React.useState(1);
-                // const counter = counterState[0];
-                // const setCounter = counterState[1];
 
-                console.log("카운터", counter);
-
-                function handleFormSubmit(event) {
-                    event.preventDefault();
-                    console.log("폼 전송됨");
-                    setCounter(counter + 1);
-                }
+            // lifting state up (상태 끌어올리기)
+            const Form = ({ handleFormSubmit }) => {
                 return (
                     <form onSubmit={handleFormSubmit}>
                         <input
@@ -126,20 +116,30 @@
                     </form>
                 );
             };
-            // 최상위 태그는 하나여야 함
-            // const app = ({mainCard}{favorites}); // Error
-            const app = (
-                <div>
-                    <Title>1번째 고양이 가라사대</Title>
-                    <Form />
-                    <MainCard img="https://cataas.com/cat/60b73094e04e18001194a309/says/react" />
-                    <Favorites />
-                </div>
-            );
 
+            // element를 component로 변경
+            const App = () => {
+                const [counter, setCounter] = React.useState(1);
+                console.log("카운터", counter);
+
+                function handleFormSubmit(event) {
+                    event.preventDefault();
+                    console.log("폼 전송됨");
+                    setCounter(counter + 1);
+                }
+
+                return (
+                    <div>
+                        <Title>{counter}번째 고양이 가라사대</Title>
+                        <Form handleFormSubmit={handleFormSubmit} />
+                        <MainCard img="https://cataas.com/cat/60b73094e04e18001194a309/says/react" />
+                        <Favorites />
+                    </div>
+                );
+            };
             console.log("야옹");
 
-            ReactDOM.render(app, 그릴위치);
+            ReactDOM.render(<App />, 그릴위치);
         </script>
     </body>
 </html>
