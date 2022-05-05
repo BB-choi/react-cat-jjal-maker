@@ -1,145 +1,166 @@
 <!DOCTYPE html>
 <html lang="ko">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>고양이 가라사대</title>
-    </head>
-    <style>
-        body {
-            text-align: center;
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>고양이 가라사대</title>
+  </head>
+  <style>
+    body {
+      text-align: center;
+    }
+    .main-card button {
+      position: relative;
+      left: -45px;
+      bottom: 15px;
+    }
+    .favorites {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+  </style>
+  <body>
+    <div id="app"></div>
+    <script
+      src="https://unpkg.com/react@17/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
+      const jsonLocalStorage = {
+        setItem: (key, value) => {
+          localStorage.setItem(key, JSON.stringify(value));
+        },
+        getItem: (key) => {
+          return JSON.parse(localStorage.getItem(key));
+        },
+      };
+
+      const 그릴위치 = document.querySelector("#app");
+
+      function CatItem(props) {
+        return (
+          <li>
+            <img src={props.img} alt="고양이" style={{ width: "150px" }} />
+          </li>
+        );
+      }
+
+      function Favorites({ favorites }) {
+        return (
+          <ul className="favorites">
+            {favorites.map((favorite) => (
+              <CatItem img={favorite} key={favorite} />
+            ))}
+          </ul>
+        );
+      }
+
+      const MainCard = ({ img, onHeartClick }) => {
+        return (
+          <div className="main-card">
+            <img src={img} alt="고양이" width="400" />
+            <button onClick={onHeartClick}>🤍</button>
+          </div>
+        );
+      };
+
+      const Title = (props) => {
+        return <h1>{props.children}</h1>;
+      };
+
+      const Form = ({ updateMainCat }) => {
+        const includesHangul = (text) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/i.test(text);
+
+        const [value, setValue] = React.useState("");
+        const [errorMessage, setErrorMessage] = React.useState("");
+
+        function handleInputChange({ target: { value } }) {
+          if (includesHangul(value)) {
+            setErrorMessage("한글은 입력할 수 없습니다.");
+            return;
+          }
+
+          setErrorMessage("");
+          setValue(value.toUpperCase());
         }
-        .main-card button {
-            position: relative;
-            left: -45px;
-            bottom: 15px;
+
+        function handleFormSubmit(e) {
+          e.preventDefault();
+
+          if (!value.length) {
+            setErrorMessage("빈 값으로는 생성할 수 없습니다.");
+            return;
+          }
+
+          setErrorMessage("");
+          updateMainCat();
         }
-        .favorites {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
+
+        return (
+          <form onSubmit={handleFormSubmit}>
+            <input
+              type="text"
+              name="name"
+              placeholder="영어 대사를 입력해주세요"
+              onChange={handleInputChange}
+              value={value}
+            />
+            <button type="submit">생성</button>
+            <p style={{ color: "red" }}>{errorMessage}</p>
+          </form>
+        );
+      };
+
+      const App = () => {
+        const CAT1 =
+          "https://cataas.com/cat/60b73094e04e18001194a309/says/react";
+        const CAT2 =
+          "https://cataas.com//cat/5e9970351b7a400011744233/says/inflearn";
+        const CAT3 =
+          "https://cataas.com/cat/595f280b557291a9750ebf65/says/JavaScript";
+
+        const [counter, setCounter] = React.useState(
+          jsonLocalStorage.getItem("counter") || 1
+        );
+        const [mainCat, setMainCat] = React.useState(CAT1);
+        const [favorites, setFavorites] = React.useState(
+          jsonLocalStorage.getItem("favorites") || []
+        );
+
+        function updateMainCat() {
+          setMainCat(CAT2);
+
+          const nextCounter = counter + 1;
+          setCounter(nextCounter);
+          jsonLocalStorage.setItem("counter", nextCounter);
         }
-    </style>
-    <body>
-        <div id="app"></div>
-        <script
-            src="https://unpkg.com/react@17/umd/react.development.js"
-            crossorigin
-        ></script>
-        <script
-            src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
-            crossorigin
-        ></script>
-        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-        <script type="text/babel">
-            /* function Card(title, description) {
-                return (
-                    <div>
-                        <h2>{title}</h2>
-                        {description}
-                    </div>
-                );
-            }
-            // 컴포넌트 내용만 바꿔서 재사용
-            Card("React", "React입니다.");
-            // HTML처럼 사용도 가능
-            <Card title="리액트" description="리액트 내용" />; */
 
-            const 그릴위치 = document.querySelector("#app");
+        function handleHeartClick() {
+          const nextFavorites = [...favorites, mainCat];
+          setFavorites(nextFavorites);
+          jsonLocalStorage.setItem("favorites", nextFavorites);
+        }
 
-            // 컴포넌트는 대문자로 시작
-            function CatItem(props) {
-                // console.log(props);
-                return (
-                    <li>
-                        <img
-                            src={props.img}
-                            alt="고양이"
-                            style={{ width: "150px" }}
-                        />
-                    </li>
-                );
-            }
+        return (
+          <div>
+            <Title>{counter}번째 고양이 가라사대</Title>
+            <Form updateMainCat={updateMainCat} />
+            <MainCard img={mainCat} onHeartClick={handleHeartClick} />
+            <Favorites favorites={favorites} />
+          </div>
+        );
+      };
 
-            function Favorites() {
-                return (
-                    <ul className="favorites">
-                        <CatItem
-                            img="https://cataas.com//cat/5e9970351b7a400011744233/says/inflearn"
-                            title="고양이1"
-                        />
-                        <CatItem img="https://cataas.com/cat/595f280b557291a9750ebf65/says/JavaScript" />
-                    </ul>
-                );
-            }
-
-            const MainCard = ({ img }) => {
-                // handle~ 이름 : React의 관례,  onClick handle ~Click
-                function handleHeartClick() {
-                    console.log("하트 클릭");
-                }
-
-                function handleHeartMouseOver() {
-                    console.log("하트 스쳐 지나감");
-                }
-
-                return (
-                    <div className="main-card">
-                        <img src={img} alt="고양이" width="400" />
-                        <button
-                            onClick={handleHeartClick}
-                            onMouseOver={handleHeartMouseOver}
-                        >
-                            🤍
-                        </button>
-                    </div>
-                );
-            };
-
-            const Title = (props) => {
-                return <h1>{props.children}</h1>;
-            };
-
-            // lifting state up (상태 끌어올리기)
-            const Form = ({ handleFormSubmit }) => {
-                return (
-                    <form onSubmit={handleFormSubmit}>
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="영어 대사를 입력해주세요"
-                        />
-                        <button type="submit">생성</button>
-                    </form>
-                );
-            };
-
-            // element를 component로 변경
-            const App = () => {
-                const [counter, setCounter] = React.useState(1);
-                console.log("카운터", counter);
-
-                function handleFormSubmit(event) {
-                    event.preventDefault();
-                    console.log("폼 전송됨");
-                    setCounter(counter + 1);
-                }
-
-                return (
-                    <div>
-                        <Title>{counter}번째 고양이 가라사대</Title>
-                        <Form handleFormSubmit={handleFormSubmit} />
-                        <MainCard img="https://cataas.com/cat/60b73094e04e18001194a309/says/react" />
-                        <Favorites />
-                    </div>
-                );
-            };
-            console.log("야옹");
-
-            ReactDOM.render(<App />, 그릴위치);
-        </script>
-    </body>
+      ReactDOM.render(<App />, 그릴위치);
+    </script>
+  </body>
 </html>
